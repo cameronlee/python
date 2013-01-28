@@ -63,7 +63,7 @@ def do_segmentation(obj_name):
     return pc_sel
 
 def save_pcs(clouds_pc2, save_file):
-    os.chdir(osp.join(osp.dirname(__file__), "saved_pcs"))
+    os.chdir(osp.join(osp.dirname(__file__), "exp_pcs"))
     for i, cloud_pc2 in enumerate(clouds_pc2):
         np.savetxt("%s%i.pc" % (save_file, i), voxel_downsample(pc2xyzrgb(cloud_pc2)[0], .02))
 
