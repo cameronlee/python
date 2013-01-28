@@ -61,13 +61,16 @@ def do_segmentation(obj_name):
     return pc_sel
 
 # asks for all point clouds at once before execution
-def get_all_clouds_pc2(num_objs):
+def get_all_clouds_pc2(num_objs, save_file=None):
     clouds = []
     for obj_num in xrange(num_objs):
         next_cloud = filter_pc2(do_segmentation("object%i" % obj_num))
         while not yes_or_no("Continue?"):
             next_cloud = filter_pc2(do_segmentation("object%i" % obj_num))
         clouds.append(next_cloud)
+    if save_file is not None:
+        os.chdir(osp.join(osp.dirname(__file__), "saved_pcs"))
+        np.savetxt(np.array(clouds), save_file)
     return clouds
 
 # execute for a single stage test (manually do the previous stage)
@@ -152,6 +155,8 @@ def get_args():
     parser.add_argument("--stages",type=str)
     # three values separated by commas: demo index for stage, stage number, and demo index for previous stage
     parser.add_argument("--single",type=str)
+    # do not consider the ignored demos
+    parser.add_argument("--save",type=str)
     args = parser.parse_args()
     return args
 
@@ -186,7 +191,7 @@ def run_exp(args, verb_data_accessor):
     elif args.stages is not None:
         if args.stages[0] == 'a':
             demo_name = "%s%s" % (demo_base_name, args.stages[1:])
-            exp_clouds_pc2 = get_all_clouds_pc2(verb_data_accessor.get_num_stages(demo_name))
+            exp_clouds_pc2 = get_all_clouds_pc2(verb_data_accessor.get_num_stages(demo_name), args.save)
             closest_demo_name = find_closest_demo(verb_data_accessor.get_verb_from_demo_name(demo_name), exp_clouds_pc2)
             print "Closest demo is %s" % (closest_demo_name)
             do_multiple_single_demo(demo_name, verb_data_accessor, exp_clouds_pc2)
