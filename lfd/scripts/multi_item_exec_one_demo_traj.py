@@ -16,6 +16,8 @@ from lfd import scene_diff
 from rope_vision import rope_initialization as ri
 from jds_image_proc.clouds import voxel_downsample
 from jds_utils import conversions as juc
+import os
+import os.path as osp
 
 class Globals:
     handles = []
@@ -60,18 +62,24 @@ def do_segmentation(obj_name):
     pc_sel = seg_svc.call(ProcessCloudRequest(cloud_in = pc_tf)).cloud_out
     return pc_sel
 
+def save_pcs(clouds_pc2, save_file):
+    os.chdir(osp.join(osp.dirname(__file__), "saved_pcs"))
+    for i, cloud_pc2 in enumerate(clouds_pc2):
+        np.savetxt("%s%i.pc" % (save_file, i), voxel_downsample(pc2xyzrgb(cloud_pc2)[0], .02))
+
 # asks for all point clouds at once before execution
 def get_all_clouds_pc2(num_objs, save_file=None):
-    clouds = []
+    clouds_pc2 = []
     for obj_num in xrange(num_objs):
         next_cloud = filter_pc2(do_segmentation("object%i" % obj_num))
         while not yes_or_no("Continue?"):
             next_cloud = filter_pc2(do_segmentation("object%i" % obj_num))
-        clouds.append(next_cloud)
+        clouds_pc2.append(next_cloud)
+
     if save_file is not None:
-        os.chdir(osp.join(osp.dirname(__file__), "saved_pcs"))
-        np.savetxt(np.array(clouds), save_file)
-    return clouds
+        save_pcs(clouds_pc2, save_file)
+
+    return clouds_pc2
 
 # execute for a single stage test (manually do the previous stage)
 def do_single(demo_name, stage_num, prev_demo_index, verb_data_accessor, prev_and_cur_pc2):
@@ -94,17 +102,11 @@ def do_stage(demo_name, stage_num, prev_stage_info, prev_exp_pc2, cur_exp_pc2, v
     stage_info = verb_data_accessor.get_stage_info(demo_name, stage_num)
     make_req = get_trajectory_request(stage_info.verb, cur_exp_pc2)
 
-    if stage_num == 0:
-        grip_to_world_transform_func = None
-    else:
-        grip_to_world_transform_func = multi_item_make_verb_traj.make_grip_to_world_transform_tf("%s_gripper_tool_frame" %
-                                                                                                 verb_data_accessor.get_stage_info(demo_name, stage_num).arms_used)
-
     make_resp = multi_item_make_verb_traj.make_traj_multi_stage(make_req, demo_name,
                                                                 stage_num, prev_stage_info,
                                                                 prev_exp_pc2, verb_data_accessor,
                                                                 "tps_zrot")
-    
+
     can_move_lower = (stage_num == 0)
     yn = yes_or_no("continue?")
     if yn:
@@ -192,8 +194,8 @@ def run_exp(args, verb_data_accessor):
         if args.stages[0] == 'a':
             demo_name = "%s%s" % (demo_base_name, args.stages[1:])
             exp_clouds_pc2 = get_all_clouds_pc2(verb_data_accessor.get_num_stages(demo_name), args.save)
-            closest_demo_name = find_closest_demo(verb_data_accessor.get_verb_from_demo_name(demo_name), exp_clouds_pc2)
-            print "Closest demo is %s" % (closest_demo_name)
+            #closest_demo_name = find_closest_demo(verb_data_accessor.get_verb_from_demo_name(demo_name), exp_clouds_pc2)
+            #print "Closest demo is %s" % (closest_demo_name)
             do_multiple_single_demo(demo_name, verb_data_accessor, exp_clouds_pc2)
         else:
             stages = [int(stage) for stage in args.stages.split(",")]

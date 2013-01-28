@@ -8,8 +8,7 @@ import numpy as np
 import roslib
 roslib.load_manifest("verb_msgs")
 from verb_msgs.srv import ExecTrajectoryRequest, ExecTrajectoryResponse, ExecTrajectory
-import brett2.ros_utils as ru
-from brett2 import PR2
+from brett2 import PR2, ros_utils
 from jds_utils import conversions as juc
 import geometry_msgs.msg as gm
 from kinematics import kinbodies
@@ -28,7 +27,7 @@ class Globals:
     pr2 = None
     rviz = None
     isinstance(pr2, PR2.PR2)
-    isinstance(rviz, ru.RvizWrapper)
+    isinstance(rviz, ros_utils.RvizWrapper)
     table_loaded = False
     
     def __init__(self): raise
@@ -36,7 +35,7 @@ class Globals:
     @staticmethod
     def setup():
         Globals.pr2 = PR2.PR2.create()
-        Globals.rviz = ru.RvizWrapper.create()
+        Globals.rviz = ros_utils.RvizWrapper.create()
         if not Globals.table_loaded:
             load_table()
             draw_table()
@@ -54,7 +53,7 @@ def draw_table():
     ps.header.frame_id = "base_footprint"
     ps.pose.position = gm.Point(*aabb.pos())
     ps.pose.orientation = gm.Quaternion(0,0,0,1)
-    Globals.handles.append(Globals.rviz.draw_marker(ps, type=ru.Marker.CUBE, scale = aabb.extents()*2, id = 24019,rgba = (1,0,0,.25)))
+    Globals.handles.append(Globals.rviz.draw_marker(ps, type=ros_utils.Marker.CUBE, scale = aabb.extents()*2, id = 24019,rgba = (1,0,0,.25)))
     
 # if the difference between two gripper angles is greater than this, then the gripper angle is "changing"
 GRIPPER_ANGLE_TOLERANCE = 0.0005
@@ -183,12 +182,12 @@ def remove_lower_poses(current_pos, gripper_poses, gripper_angles):
     return removed_lower_poses, updated_angles
 
 # wrapper for exec_traj_do_work which takes in a ros message
-def exec_traj(req, traj_ik_func=ik_functions.do_traj_ik_graph_search, obj_pc=None, obj_name=""):
+def exec_traj(req, traj_ik_func=ik_functions.do_traj_ik_graph_search, obj_pc=None, obj_name="", can_move_lower=True):
     assert isinstance(req, ExecTrajectoryRequest)
     traj = req.traj
     return exec_traj_do_work(traj.l_gripper_poses.poses, traj.l_gripper_angles,
                              traj.r_gripper_poses.poses, traj.r_gripper_angles,
-                             traj_ik_func, ros_utils.pc2xyzrgb(obj_pc)[0], obj_name)
+                             traj_ik_func, ros_utils.pc2xyzrgb(obj_pc)[0], obj_name, can_move_lower)
 
 # unwrap continuous joints to avoid winding
 def unwrap_angles(angles):
@@ -196,7 +195,7 @@ def unwrap_angles(angles):
         angles[:, joint_num] = np.unwrap(angles[:, joint_num])
     return angles
 
-def exec_traj_do_work(l_gripper_poses, l_gripper_angles, r_gripper_poses, r_gripper_angles, traj_ik_func, obj_cloud_xyz, obj_name, can_move_lower=True):
+def exec_traj_do_work(l_gripper_poses, l_gripper_angles, r_gripper_poses, r_gripper_angles, traj_ik_func, obj_cloud_xyz, obj_name, can_move_lower):
     del Globals.handles[1:]
     grab_obj_kinbody = setup_obj_rave(obj_cloud_xyz, obj_name) if obj_cloud_xyz is not None else None
     body_traj = {}
