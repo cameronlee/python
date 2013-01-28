@@ -52,7 +52,7 @@ def get_closest_scenes(data_dir, verb):
             exp_clouds.append(np.loadtxt(osp.join(abs_exp_dir, pc_file)))
         possible_demo_names = get_possible_demo_names(demo_base_name, 2)
         scene_diff_closest_name = scene_diff.get_closest_demo(verb_data_accessor, verb, exp_clouds, ignore=possible_demo_names)
-        closest[demo_name] = scene_diff_closest_name
+        closest[demo_base_name] = scene_diff_closest_name
     return closest
 
 def print_usage():

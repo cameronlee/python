@@ -220,9 +220,6 @@ def make_traj_multi_stage_do_work(demo_name, exp_target_cloud, frame_id, stage_n
                                                           demo_to_exp_tool_transform, spec_pt_in_grip,
                                                           world_to_grip_transform_func, arm)
 
-        import IPython
-        IPython.embed()
-
         warped_transs, warped_rots = juc.hmats_to_transs_rots(warped_grip_traj_mats)
         warped_stage_data[gripper_data_key]["position"] = warped_transs
         warped_stage_data[gripper_data_key]["orientation"] = warped_rots
