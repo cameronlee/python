@@ -223,8 +223,9 @@ class Globals:
 def default_plot_callback(x_nd, y_md, targ_nd, corr_nm, wt_n, f):
     del Globals.handles[:]
     plot_orig_and_warped_clouds(f.transform_points, x_nd, y_md)   
-    targ_pose_array = conversions.array_to_pose_array(targ_nd, 'base_footprint')
-    Globals.handles.append(Globals.rviz.draw_curve(targ_pose_array,rgba=(1,1,0,1),type=Marker.CUBE_LIST))    
+    if targ_nd is not None:
+        targ_pose_array = conversions.array_to_pose_array(targ_nd, 'base_footprint')
+        Globals.handles.append(Globals.rviz.draw_curve(targ_pose_array,rgba=(1,1,0,1),type=Marker.CUBE_LIST))    
 
 def tps_rpm(x_nd, y_md, n_iter = 5, reg_init = .1, reg_final = .001, rad_init = .2, rad_final = .001, plotting = False, verbose=True, f_init = None, return_full = False, plot_cb = None):
     """
@@ -280,7 +281,7 @@ def logmap(m):
     return (1/(2*np.sin(theta))) * np.array([[m[2,1] - m[1,2], m[0,2]-m[2,0], m[1,0]-m[0,1]]]), theta
 
 def tps_rpm_zrot(x_nd, y_md, n_iter = 5, reg_init = .1, reg_final = .001, rad_init = .2, rad_final = .001, plotting = False, 
-                 verbose=True, rot_param=(.05, .05, .05), scale_param = .01, plot_cb = None):
+                 verbose=True, rot_param=(.05, .05, .05), scale_param = .01, plot_cb = default_plot_callback):
     """
     Do tps_rpm algorithm for each z angle rotation
     Then don't reestimate affine part in tps optimization
