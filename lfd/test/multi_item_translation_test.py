@@ -54,7 +54,7 @@ def similar_trajectories(traj1, traj2):
     return True, "matching"
 
 # get the demo special point trajectory
-def get_demo_spec_pt_traj_mats(demo_target_data, gripper_data_key):
+def get_demo_spec_pt_traj_mats(demo_tool_info, demo_target_data, gripper_data_key):
     demo_grip_traj_xyzs = demo_target_data[gripper_data_key]["position"]
     demo_grip_traj_oriens = demo_target_data[gripper_data_key]["orientation"]
     demo_grip_traj_mats = [juc.trans_rot_to_hmat(trans, orien) for (trans, orien) in zip(demo_grip_traj_xyzs, demo_grip_traj_oriens)]
@@ -64,7 +64,7 @@ def get_demo_spec_pt_traj_mats(demo_target_data, gripper_data_key):
 
 # translates the expected special point trajectory to a gripper trajectory
 def get_expected_gripper_traj(special_point, expected_spec_pt_traj):
-    exp_tool_spec_pt_translation = jut.translation_matrix(np.array(exp_tool_info.special_point))
+    exp_tool_spec_pt_translation = jut.translation_matrix(np.array(special_point))
     inv_exp_tool_spec_pt_translation = np.linalg.inv(exp_tool_spec_pt_translation)
     expected_gripper_traj = [np.dot(traj_mat, inv_exp_tool_spec_pt_translation) for traj_mat in expected_spec_pt_traj]
     return expected_gripper_traj
@@ -126,7 +126,7 @@ def test_translation(demo_name, exp_name, data_dir):
     actual_target_translation = jut.translation_matrix(params["translation"])
 
     # find the expected warped gripper trajectory using the manual translation measurement
-    demo_spec_pt_traj_mats = get_demo_spec_pt_traj_mats(demo_target_data, gripper_data_key)
+    demo_spec_pt_traj_mats = get_demo_spec_pt_traj_mats(demo_tool_info, demo_target_data, gripper_data_key)
     expected_spec_pt_traj = [np.dot(actual_target_translation, traj_mat) for traj_mat in demo_spec_pt_traj_mats]
     expected_gripper_traj = get_expected_gripper_traj(exp_tool_info.special_point, expected_spec_pt_traj)
 
