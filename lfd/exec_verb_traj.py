@@ -168,13 +168,14 @@ def prepend_path_to_start(current_pos, gripper_poses, gripper_angles, n_steps):
     updated_angles = np.concatenate((np.ones(n_steps) * gripper_angles[0], gripper_angles))
     return prepended_gripper_poses, updated_angles
     
+TABLE_TOLERANCE = 0.02
 # remove poses lower than the current position at the beginning of the trajectory 
 def remove_lower_poses(current_pos, gripper_poses, gripper_angles):
     xyz, quat = juc.hmat_to_trans_rot(current_pos)
     z_floor = xyz[2]
     low_index = 0
     for pose in gripper_poses:
-        if pose.position.z >= z_floor:
+        if pose.position.z >= z_floor + TABLE_TOLERANCE:
             break
         low_index += 1
     removed_lower_poses = gripper_poses[low_index:]
@@ -232,7 +233,9 @@ def exec_traj_do_work(l_gripper_poses, l_gripper_angles, r_gripper_poses, r_grip
     yn = yes_or_no("continue?")
     if yn:
         lt.follow_trajectory_with_grabs(Globals.pr2, body_traj)
-
+        while not yes_or_no("continue to next stage?"):
+            lt.follow_trajectory_with_grabs(Globals.pr2, body_traj)
+            
         if grab_obj_kinbody is not None:
             handle_grab_or_release_obj(grab_obj_kinbody, l_gripper_poses, l_gripper_angles, r_gripper_poses, r_gripper_angles)
 
