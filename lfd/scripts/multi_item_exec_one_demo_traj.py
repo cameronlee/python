@@ -65,7 +65,7 @@ def do_segmentation(obj_name):
 def save_pcs(clouds_pc2, save_file):
     os.chdir(osp.join(osp.dirname(__file__), "exp_pcs"))
     for i, cloud_pc2 in enumerate(clouds_pc2):
-        np.savetxt("%s%i.pc" % (save_file, i), voxel_downsample(pc2xyzrgb(cloud_pc2)[0], .02))
+        np.savetxt("%s.pc%i" % (save_file, i), voxel_downsample(pc2xyzrgb(cloud_pc2)[0], .02))
 
 # asks for all point clouds at once before execution
 def get_all_clouds_pc2(num_objs, save_file=None):
