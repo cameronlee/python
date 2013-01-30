@@ -141,6 +141,7 @@ def do_globals_setup():
 # initialize the pr2 position
 def move_pr2_to_start_pos(pr2):
     HEAD_ANGLE = 1.1
+    pr2.torso.go_up()
     pr2.rgrip.open()
     pr2.lgrip.open()
     pr2.rarm.goto_posture('side')
