@@ -23,7 +23,7 @@ def get_warping_transform(from_cloud, to_cloud, transform_type="tps"):
         return registration.tps_rpm(from_cloud, to_cloud, plotting=2, reg_init=2, reg_final=.5, n_iter=10, verbose=False)
     elif transform_type == "tps_zrot":
         return registration.tps_rpm_zrot(from_cloud, to_cloud, reg_init=2, reg_final=.5, n_iter=9, 
-                                         verbose=False, rot_param = (.01,.01,.005), scale_param=.01,
+                                         verbose=False, rot_param = (.01,.01,.0025), scale_param=.01,
                                          plotting=10)
     elif transform_type == "translation2d":
         warp = registration.Translation2d()
