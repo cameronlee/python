@@ -1,5 +1,5 @@
 import os.path as osp
-from lfd import registration
+from lfd import registration, multi_item_make_verb_traj
 
 DATA_DIR = osp.join(osp.dirname(__file__), "data")
 
@@ -8,7 +8,7 @@ def get_scene_dist(demo_clouds, exp_clouds):
     assert len(demo_clouds) == len(exp_clouds)
     total_cost = 0
     for demo_cloud, exp_cloud in zip(demo_clouds, exp_clouds):
-        warp_func = registration.tps_rpm_zrot(demo_cloud, exp_cloud, reg_init=2, reg_final=.5, n_iter=10, verbose=False)
+        warp_func = multi_item_make_verb_traj.get_warping_transform(demo_cloud, exp_cloud, transform_type="tps_zrot")
         total_cost += warp_func.cost
     return total_cost
 
@@ -20,6 +20,15 @@ def find_argmin(d):
             min_key = k
             min_value = v
     return min_key
+
+def find_argmax(d):
+    max_key = None
+    max_value = float("-Inf")
+    for k, v in d.items():
+        if v > max_value:
+            max_key = k
+            max_value = v
+    return max_key
 
 def get_clouds_for_demo(verb_data_accessor, demo_name):
     demo_clouds = []
@@ -37,15 +46,26 @@ def get_closest_demo(verb_data_accessor, verb, exp_clouds, ignore=[], return_dis
     verb_info = verb_data_accessor.get_verb_info(verb)
     demo_scene_dists = {}
     for name, info in verb_info:
-        demo_clouds = get_clouds_for_demo(verb_data_accessor, name)
-        demo_scene_dists[name] = get_scene_dist(demo_clouds, exp_clouds)
-    for ignored_demo in ignore:
-        if demo_scene_dists.has_key(ignored_demo):
-            demo_scene_dists.pop(ignored_demo)
+        if name not in ignore:
+            demo_clouds = get_clouds_for_demo(verb_data_accessor, name)
+            demo_scene_dists[name] = get_scene_dist(demo_clouds, exp_clouds)
 
     closest_demo = find_argmin(demo_scene_dists)
 
+    import IPython
+    IPython.embed()
+
     if return_dists:
-        return (closest_demo, demo_scene_dists)
+        return closest_demo, demo_scene_dists
     else:
         return closest_demo
+
+def get_closest_and_furthest_demo(verb_data_accessor, verb, exp_clouds, ignore=[], return_dists=False):
+    closest_demo, demo_scene_dists = get_closest_demo(verb_data_accessor, verb, exp_clouds, ignore=ignore, return_dists=True)
+    furthest_demo = find_argmax(demo_scene_dists)
+
+    if return_dists:
+        return closest_demo, furthest_demo, demo_scene_dists
+    else:
+        return closest_demo, furthest_demo
+

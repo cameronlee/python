@@ -39,6 +39,8 @@ def draw_orig_new_warped_pcs(orig_pc, new_pc, warped_pc):
 
 class Transformation(object):
     n_params = 0
+    def __init__(self):
+        self.cost = 0
     def fit(self, x_nd, y_nd):
         raise NotImplementedError
     def transform_points(self, x_nd):
@@ -331,6 +333,7 @@ def tps_rpm_zrot(x_nd, y_md, n_iter = 5, reg_init = .1, reg_final = .001, rad_in
         tpscosts.append(dists_nm.min(axis=1).mean())
         regcosts.append(regcost)
         costs.append(tpscost + regcost)
+        f.cost = tpscost + regcost
         fs.append(f)        
         print "linear part", f.lin_ag
         u,s,vh = np.linalg.svd(f.lin_ag)
@@ -349,7 +352,7 @@ def tps_rpm_zrot(x_nd, y_md, n_iter = 5, reg_init = .1, reg_final = .001, rad_in
     print "best scaling:", s
 
     if plotting:
-        plot_cb(x_nd, y_md, None, None, None, f)
+        plot_cb(x_nd, y_md, None, None, None, best_f)
 
     return best_f
 
