@@ -106,13 +106,10 @@ def is_grabbing_obj(gripper):
 def process_gripper_angles_for_grabbing(lr, gripper_angles):
     if is_grabbing_obj(lr):
         start_open_index = get_open_index(gripper_angles)
-        if start_open_index < len(gripper_angles):
-            return replace_range(0, gripper_angles, end=start_open_index)
+        return replace_range(0, gripper_angles, end=start_open_index)
     else:
         start_close_index = get_close_index(gripper_angles)
-        if start_close_index < len(gripper_angles):
-            return replace_range(0, gripper_angles, start=start_close_index)
-    return gripper_angles
+        return replace_range(0, gripper_angles, start=start_close_index)
 
 # fixes the end of joint_positions once the gripper starts opening or closing
 # adds the point cloud to the openrave environment
