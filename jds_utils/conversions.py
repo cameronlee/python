@@ -13,7 +13,7 @@ def pose_to_trans_rot(pose):
 def trans_rot_to_pose(trans,rot):
     pose = gm.Pose()
     pose.position.x, pose.position.y, pose.position.z = trans
-    pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.z = rot
+    pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w = rot
     return pose
 
 def hmat_to_pose(hmat):
