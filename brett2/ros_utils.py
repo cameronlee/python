@@ -216,6 +216,34 @@ class RvizWrapper:
         self.ids = set([])
         register_deletion()
 
+    def make_arrow_marker(self, header, pose, rgba, arrow_scale, ns):
+        marker = Marker(type=Marker.ARROW,action=Marker.ADD)
+        marker.header = header
+        marker.pose = pose
+        marker.lifetime = rospy.Duration(0)
+        marker.color = stdm.ColorRGBA(*rgba)
+        marker.scale = gm.Vector3(6*arrow_scale, arrow_scale, arrow_scale)
+        marker.id = self.get_unused_id()
+        self.ids.add(marker.id)
+        marker.ns = ns
+        return marker
+
+    def draw_axes(self, pose_array, rgba = (0,1,0,1), arrow_scale = .1, ns = "default_ns", duration=0):
+        marker_array = MarkerArray()
+        for pose in pose_array.poses:
+            pose_trans, pose_rot = conversions.pose_to_trans_rot(pose)
+            x_arrow_pose = conversions.trans_rot_to_pose(pose_trans, (0,0,0,1))
+            x_arrow = self.make_arrow_marker(pose_array.header, x_arrow_pose, rgba, arrow_scale, ns)
+            marker_array.markers.append(x_arrow)
+            y_arrow_pose = conversions.trans_rot_to_pose(pose_trans, (0,0,-2**0.5/2,2**0.5/2))
+            y_arrow = self.make_arrow_marker(pose_array.header, y_arrow_pose, rgba, arrow_scale, ns)
+            marker_array.markers.append(y_arrow)
+            z_arrow_pose = conversions.trans_rot_to_pose(pose_trans, (0,-2**0.5/2,0,2**0.5/2))
+            z_arrow = self.make_arrow_marker(pose_array.header, z_arrow_pose, rgba, arrow_scale, ns)
+            marker_array.markers.append(z_arrow)
+        self.array_pub.publish(marker_array)
+        return MarkerListHandle([MarkerHandle(marker, self.pub) for marker in marker_array.markers])
+
     def draw_traj_points(self, pose_array, rgba = (0,1,0,1), arrow_scale = .05, ns = "default_ns", duration=0):
         marker_array = MarkerArray()
         for pose in pose_array.poses:

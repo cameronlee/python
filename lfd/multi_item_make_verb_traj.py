@@ -33,6 +33,10 @@ def get_warping_transform(from_cloud, to_cloud, transform_type="tps"):
         warp = registration.Rigid2d()
         warp.fit(from_cloud, to_cloud)
         return warp
+    elif transform_type == "rigid3d":
+        warp = registration.Rigid3d()
+        warp.fit(from_cloud, to_cloud)
+        return warp
     else:
         raise Exception("transform type %s is not yet implemented" % transform_type)
 
@@ -241,9 +245,9 @@ def make_traj_multi_stage_do_work(demo_name, exp_target_cloud, frame_id, stage_n
         plot_demo_and_warped_tool_spec_pt(current_spec_pt, current_stage_data, demo_to_exp_target_transform, arms_used)
 
     # plot the gripper and special point trajectories (red is demo, green is warped)
-    plot_original_and_warped_demo_and_spec_pt(current_stage_data, warped_stage_data,
-                                              demo_spec_pt_xyzs, exp_spec_pt_xyzs,
-                                              arms_used)
+    #plot_original_and_warped_demo_and_spec_pt(current_stage_data, warped_stage_data,
+    #                                          demo_spec_pt_xyzs, exp_spec_pt_xyzs,
+    #                                          arms_used)
 
     return resp
 
@@ -252,11 +256,11 @@ def plot_demo_and_warped_tool_spec_pt(spec_pt_in_grip, tool_stage_data, demo_to_
     demo_tool_grip_to_world_transform = get_demo_tool_grip_to_world_transform(tool_stage_data, arm)
     demo_spec_pt_in_world = apply_mat_transform_to_xyz(demo_tool_grip_to_world_transform, spec_pt_in_grip)
     demo_spec_pt_in_world_frame = jut.translation_matrix(demo_spec_pt_in_world)
-    plot_spec_pts(np.array([demo_spec_pt_in_world]), (1,0,0,0.5))
+    plot_spec_pts(np.array([demo_spec_pt_in_world]), (1,0,0,1))
 
     warped_spec_pt_in_world_frame = apply_tps_transform_to_hmat(demo_to_exp_tool_transform, demo_spec_pt_in_world_frame)
     warped_spec_pt_in_world_trans, warped_spec_pt_in_world_rot = juc.hmat_to_trans_rot(warped_spec_pt_in_world_frame)
-    plot_spec_pts(np.array([warped_spec_pt_in_world_trans]), (0,1,0,0.5))
+    plot_spec_pts(np.array([warped_spec_pt_in_world_trans]), (0,1,0,1))
 
 # plots a trajectory in rviz; uses RvizWrapper function that displays arrows giving the orientation of the gripper(s)
 def plot_traj(xyzs, rgba, quats=None):
@@ -266,7 +270,7 @@ def plot_traj(xyzs, rgba, quats=None):
 # plots the special point trajectory; uses the RvizWrapper function that displays points
 def plot_spec_pts(xyzs, rgba):
     pose_array = juc.array_to_pose_array(np.asarray(xyzs), 'base_footprint')
-    Globals.handles.append(Globals.rviz.draw_traj_points(pose_array, rgba = rgba, ns = "multi_item_make_verb_traj_service"))
+    Globals.handles.append(Globals.rviz.draw_axes(pose_array, rgba = rgba, ns = "multi_item_make_verb_traj_service"))
 
 # plots the original and warped gripper trajectories; also plots the original and warped special point trajs
 def plot_original_and_warped_demo_and_spec_pt(best_demo, warped_demo, spec_pt_xyzs, warped_spec_pt_xyzs, arms_used):
