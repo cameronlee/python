@@ -1,3 +1,4 @@
+import rospy
 from jds_utils.colorize import colorize
 from lfd import scene_diff
 from lfd import multi_item_verbs
@@ -29,6 +30,8 @@ def test_scene_diff(verb, exp_name, correct_closest_name, data_dir):
         report(False, msg)
 
 if __name__ == "__main__":
+    if rospy.get_name() == "/unnamed": 
+        rospy.init_node("scene_diff_test", disable_signals=True)
     test_scene_diff("grab", "grab-marker00", "grab-marker450", "grab_marker_l")
     #test_scene_diff("grab", "grab-marker900", "grab-marker450", "grab_marker_l")
     #test_scene_diff("place", "place-spoon-mediumgreen0", "place-spoon-mediumgreen1", "place_spoon_cup_l_l")

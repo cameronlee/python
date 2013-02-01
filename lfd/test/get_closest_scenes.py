@@ -71,7 +71,7 @@ def results_as_str(data_dir, closest, furthest=None):
 
     if furthest is not None:
         for demo_name, furthest_demo_name in furthest.items():
-            results += "%s is furthest to %s\n" % (demo_name, furthest_demo_name)
+            results += "%s is furthest from %s\n" % (demo_name, furthest_demo_name)
 
     return results
 

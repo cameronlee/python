@@ -52,9 +52,6 @@ def get_closest_demo(verb_data_accessor, verb, exp_clouds, ignore=[], return_dis
 
     closest_demo = find_argmin(demo_scene_dists)
 
-    import IPython
-    IPython.embed()
-
     if return_dists:
         return closest_demo, demo_scene_dists
     else:
