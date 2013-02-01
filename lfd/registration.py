@@ -333,7 +333,7 @@ def tps_rpm_zrot(x_nd, y_md, n_iter = 5, reg_init = .1, reg_final = .001, rad_in
         tpscosts.append(dists_nm.min(axis=1).mean())
         regcosts.append(regcost)
         costs.append(tpscost + regcost)
-        f.cost = tpscost + regcost
+        f.cost = regcost
         fs.append(f)        
         print "linear part", f.lin_ag
         u,s,vh = np.linalg.svd(f.lin_ag)
@@ -559,6 +559,9 @@ class Rigid3d(Transformation):
         print "best_params:", best_params
         self.set_params(best_params)
         self.objective = best_val
+
+        Globals.setup()
+        draw_orig_new_warped_pcs(x_n3, y_n3, self.transform_points(x_n3))
 
     def rot_mat(self):
         a, b, c = self.alpha, self.beta, self.gamma
